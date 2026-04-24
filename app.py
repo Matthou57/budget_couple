@@ -16,64 +16,66 @@ st.markdown("""
     max-width: 760px;
 }
 
-body {
-    background-color: #f7f2ec;
-}
-
 [data-testid="stAppViewContainer"] {
     background: linear-gradient(180deg, #f7f2ec 0%, #ffffff 45%);
+    color: #2b2118;
 }
 
-h1 {
-    font-size: 2.1rem !important;
-    font-weight: 800 !important;
-    letter-spacing: -0.04em;
-}
-
-h2, h3 {
-    letter-spacing: -0.02em;
+h1, h2, h3, h4, h5, h6, p, span, label, div {
+    color: #2b2118 !important;
 }
 
 div[data-testid="stMetric"] {
-    background: white;
+    background: #ffffff;
     border-radius: 18px;
     padding: 16px;
-    border: 1px solid #eadfD3;
+    border: 1px solid #eadfd3;
     box-shadow: 0 8px 24px rgba(80, 55, 30, 0.08);
+    color: #2b2118 !important;
+}
+
+div[data-testid="stMetric"] * {
+    color: #2b2118 !important;
 }
 
 .card {
-    background: white;
-    border: 1px solid #eadfD3;
+    background: #ffffff;
+    color: #2b2118 !important;
+    border: 1px solid #eadfd3;
     border-radius: 20px;
     padding: 18px;
     margin-bottom: 16px;
     box-shadow: 0 8px 24px rgba(80, 55, 30, 0.07);
 }
 
+.card * {
+    color: #2b2118 !important;
+}
+
 .card-title {
     font-size: 1.1rem;
     font-weight: 800;
     margin-bottom: 6px;
+    color: #2b2118 !important;
 }
 
 .muted {
-    color: #7c6f64;
+    color: #7c6f64 !important;
     font-size: 0.9rem;
 }
 
 .good {
-    color: #1f7a4d;
+    color: #1f7a4d !important;
     font-weight: 700;
 }
 
 .warn {
-    color: #b36b00;
+    color: #b36b00 !important;
     font-weight: 700;
 }
 
 .bad {
-    color: #b42318;
+    color: #b42318 !important;
     font-weight: 700;
 }
 
@@ -82,6 +84,7 @@ div[data-testid="stMetric"] {
     padding: 0.65rem 1rem;
     font-weight: 700;
     border: 1px solid #d8c8b8;
+    color: #2b2118 !important;
 }
 
 .stTabs [data-baseweb="tab-list"] {
@@ -91,7 +94,8 @@ div[data-testid="stMetric"] {
 .stTabs [data-baseweb="tab"] {
     border-radius: 999px;
     padding: 8px 12px;
-    background: rgba(255,255,255,0.65);
+    background: rgba(255,255,255,0.75);
+    color: #2b2118 !important;
 }
 </style>
 """, unsafe_allow_html=True)
