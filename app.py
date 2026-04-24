@@ -9,6 +9,9 @@ st.title("Budget Couple")
 DEFAULT_CATEGORIES = ["Courses", "Restaurants", "Essence", "Loisirs", "Maison", "Santé", "Bébé", "Autres"]
 DEFAULT_PEOPLE = ["Toi", "Elle", "Commun"]
 
+# ======================
+# SESSION DATA (LOCAL)
+# ======================
 if "transactions" not in st.session_state:
     st.session_state.transactions = pd.DataFrame(columns=[
         "date", "mois", "libelle", "montant", "categorie", "personne"
@@ -27,8 +30,21 @@ def current_month():
 def format_euro(value):
     return f"{float(value):,.2f} €".replace(",", " ").replace(".", ",")
 
-tabs = st.tabs(["Dashboard", "Ajouter", "Historique", "Budgets", "Catégories"])
+# ======================
+# UI
+# ======================
+tabs = st.tabs([
+    "Dashboard",
+    "Ajouter",
+    "Historique",
+    "Budgets",
+    "Catégories",
+    "Test Supabase"
+])
 
+# ======================
+# DASHBOARD
+# ======================
 with tabs[0]:
     st.subheader("Vue du mois")
 
@@ -78,20 +94,9 @@ with tabs[0]:
 
         st.progress(progress)
 
-    st.markdown("---")
-    st.subheader("Dernières dépenses")
-
-    if df.empty:
-        st.info("Aucune dépense pour le moment.")
-    else:
-        recent = df.sort_values("date", ascending=False).head(10).copy()
-        recent["montant"] = recent["montant"].apply(lambda x: format_euro(abs(float(x))))
-        st.dataframe(
-            recent[["date", "libelle", "categorie", "personne", "montant"]],
-            use_container_width=True,
-            hide_index=True
-        )
-
+# ======================
+# AJOUT
+# ======================
 with tabs[1]:
     st.subheader("Ajouter une dépense")
 
@@ -106,11 +111,12 @@ with tabs[1]:
 
         if submitted:
             if not libelle.strip():
-                st.error("Le libellé est obligatoire.")
+                st.error("Libellé obligatoire")
             elif montant <= 0:
-                st.error("Le montant doit être supérieur à 0.")
+                st.error("Montant invalide")
             else:
                 month_value = f"{depense_date.year}-{depense_date.month:02d}"
+
                 new_row = pd.DataFrame([{
                     "date": str(depense_date),
                     "mois": month_value,
@@ -124,26 +130,34 @@ with tabs[1]:
                     [st.session_state.transactions, new_row],
                     ignore_index=True
                 )
-                st.success("Dépense ajoutée.")
 
+                st.success("Dépense ajoutée")
+
+# ======================
+# HISTORIQUE
+# ======================
 with tabs[2]:
     st.subheader("Historique")
 
     df = st.session_state.transactions.copy()
 
     if df.empty:
-        st.info("Aucune dépense enregistrée.")
+        st.info("Aucune dépense")
     else:
         display_df = df.sort_values("date", ascending=False).copy()
         display_df["montant"] = display_df["montant"].apply(lambda x: format_euro(abs(float(x))))
+
         st.dataframe(
             display_df[["date", "mois", "libelle", "categorie", "personne", "montant"]],
             use_container_width=True,
             hide_index=True
         )
 
+# ======================
+# BUDGETS
+# ======================
 with tabs[3]:
-    st.subheader("Budgets mensuels")
+    st.subheader("Budgets")
 
     budget_month = st.text_input("Mois", value=current_month())
 
@@ -151,29 +165,54 @@ with tabs[3]:
         st.session_state.budgets[budget_month] = {}
 
     for cat in st.session_state.categories:
-        current_value = float(st.session_state.budgets[budget_month].get(cat, 0.0))
-        new_value = st.number_input(
-            f"Budget {cat}",
+        value = st.number_input(
+            f"{cat}",
             min_value=0.0,
             step=10.0,
-            value=current_value,
+            value=float(st.session_state.budgets[budget_month].get(cat, 0.0)),
             key=f"budget_{budget_month}_{cat}"
         )
-        st.session_state.budgets[budget_month][cat] = new_value
 
-    st.success("Budgets enregistrés.")
+        st.session_state.budgets[budget_month][cat] = value
 
+# ======================
+# CATEGORIES
+# ======================
 with tabs[4]:
     st.subheader("Catégories")
 
-    st.write("Catégories actuelles :")
     for cat in st.session_state.categories:
-        st.markdown(f"- {cat}")
+        st.write(f"- {cat}")
 
-    new_category = st.text_input("Nouvelle catégorie")
-    if st.button("Ajouter la catégorie"):
-        clean = new_category.strip()
-        if clean and clean not in st.session_state.categories:
-            st.session_state.categories.append(clean)
-            st.success(f"Catégorie ajoutée : {clean}")
+    new_cat = st.text_input("Nouvelle catégorie")
+
+    if st.button("Ajouter catégorie"):
+        if new_cat and new_cat not in st.session_state.categories:
+            st.session_state.categories.append(new_cat)
+            st.success("Ajoutée")
             st.rerun()
+
+# ======================
+# TEST SUPABASE
+# ======================
+with tabs[5]:
+    st.subheader("Test Supabase")
+
+    try:
+        from supabase import create_client
+
+        url = st.secrets["SUPABASE_URL"]
+        key = st.secrets["SUPABASE_KEY"]
+
+        supabase = create_client(url, key)
+
+        st.success("Connexion OK")
+
+        result = supabase.table("categories").select("*").limit(5).execute()
+
+        st.success("Lecture OK")
+        st.write(result.data)
+
+    except Exception as e:
+        st.error("Erreur Supabase")
+        st.code(str(e))
