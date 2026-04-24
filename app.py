@@ -21,26 +21,27 @@ st.markdown("""
     color: #2b2118;
 }
 
+/* TEXTE GLOBAL */
 h1, h2, h3, h4, h5, h6, p, span, label, div {
     color: #2b2118 !important;
 }
 
+/* METRICS */
 div[data-testid="stMetric"] {
     background: #ffffff;
     border-radius: 18px;
     padding: 16px;
     border: 1px solid #eadfd3;
     box-shadow: 0 8px 24px rgba(80, 55, 30, 0.08);
-    color: #2b2118 !important;
 }
 
 div[data-testid="stMetric"] * {
     color: #2b2118 !important;
 }
 
+/* CARDS */
 .card {
     background: #ffffff;
-    color: #2b2118 !important;
     border: 1px solid #eadfd3;
     border-radius: 20px;
     padding: 18px;
@@ -52,33 +53,40 @@ div[data-testid="stMetric"] * {
     color: #2b2118 !important;
 }
 
-.card-title {
-    font-size: 1.1rem;
-    font-weight: 800;
-    margin-bottom: 6px;
+/* STATUTS */
+.good { color: #1f7a4d !important; font-weight: 700; }
+.warn { color: #b36b00 !important; font-weight: 700; }
+.bad { color: #b42318 !important; font-weight: 700; }
+
+/* INPUTS (LE PROBLEME PRINCIPAL) */
+div[data-baseweb="select"] * {
     color: #2b2118 !important;
 }
 
-.muted {
-    color: #7c6f64 !important;
-    font-size: 0.9rem;
+div[data-baseweb="select"] {
+    background-color: #ffffff !important;
 }
 
-.good {
-    color: #1f7a4d !important;
-    font-weight: 700;
+div[data-baseweb="select"] input {
+    color: #2b2118 !important;
 }
 
-.warn {
-    color: #b36b00 !important;
-    font-weight: 700;
+/* SEGMENTED CONTROL */
+button[data-baseweb="button"] {
+    color: #2b2118 !important;
 }
 
-.bad {
-    color: #b42318 !important;
-    font-weight: 700;
+/* DROPDOWN LIST */
+ul[role="listbox"] li {
+    color: #2b2118 !important;
 }
 
+/* LABELS */
+label {
+    color: #2b2118 !important;
+}
+
+/* BOUTONS */
 .stButton button {
     border-radius: 14px;
     padding: 0.65rem 1rem;
@@ -87,6 +95,7 @@ div[data-testid="stMetric"] * {
     color: #2b2118 !important;
 }
 
+/* TABS */
 .stTabs [data-baseweb="tab-list"] {
     gap: 6px;
 }
