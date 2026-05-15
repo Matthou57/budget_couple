@@ -5,52 +5,30 @@ from supabase import create_client
 
 st.set_page_config(page_title="Budget Couple", page_icon="💗", layout="wide")
 
-# ======================
-# DESIGN V3++
-# ======================
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-html, body, [class*="css"] {
-    font-family: 'Inter', sans-serif;
-}
-
 [data-testid="stAppViewContainer"] {
     background: linear-gradient(180deg, #fff8f3 0%, #ffffff 45%);
     color: #16171f;
 }
-
 .block-container {
     max-width: 1180px;
     padding-top: 2rem;
     padding-bottom: 4rem;
 }
-
-/* TEXTE */
 h1, h2, h3, h4, h5, h6, p, span, label, div {
     color: #16171f !important;
 }
-
 h1 {
     font-size: 3.2rem !important;
     font-weight: 800 !important;
     letter-spacing: -0.05em;
-    margin-bottom: 0.2rem;
 }
-
-h2, h3 {
-    letter-spacing: -0.03em;
-}
-
-/* HEADER */
 .hero-subtitle {
     color: #6f625b !important;
     font-size: 1.05rem;
     margin-bottom: 2rem;
 }
-
-/* TABS */
 .stTabs [data-baseweb="tab-list"] {
     background: #ffffff;
     border: 1px solid #f0dfd8;
@@ -59,20 +37,15 @@ h2, h3 {
     gap: 10px;
     box-shadow: 0 10px 30px rgba(90, 50, 30, 0.06);
 }
-
 .stTabs [data-baseweb="tab"] {
     border-radius: 16px;
     padding: 12px 18px;
     font-weight: 700;
-    background: transparent;
 }
-
 .stTabs [aria-selected="true"] {
     background: #fff0f2 !important;
     border-bottom: 3px solid #ff4266 !important;
 }
-
-/* CARTES */
 .card {
     background: #ffffff;
     border: 1px solid #f0dfd8;
@@ -81,7 +54,6 @@ h2, h3 {
     box-shadow: 0 16px 40px rgba(90, 50, 30, 0.07);
     margin-bottom: 20px;
 }
-
 .kpi-card {
     background: #ffffff;
     border: 1px solid #f0dfd8;
@@ -91,7 +63,6 @@ h2, h3 {
     box-shadow: 0 16px 40px rgba(90, 50, 30, 0.07);
     text-align: center;
 }
-
 .kpi-icon {
     width: 72px;
     height: 72px;
@@ -103,37 +74,15 @@ h2, h3 {
     font-size: 32px;
     margin-bottom: 14px;
 }
-
 .kpi-label {
     font-size: 1rem;
     font-weight: 600;
     margin-bottom: 8px;
 }
-
-.kpi-value-pink {
-    color: #f43f6c !important;
-    font-size: 2.4rem;
-    font-weight: 800;
-}
-
-.kpi-value-green {
-    color: #3ca266 !important;
-    font-size: 2.4rem;
-    font-weight: 800;
-}
-
-.kpi-value-blue {
-    color: #2d7eea !important;
-    font-size: 2.4rem;
-    font-weight: 800;
-}
-
-.kpi-value-orange {
-    color: #f28a00 !important;
-    font-size: 2.4rem;
-    font-weight: 800;
-}
-
+.kpi-value-pink { color: #f43f6c !important; font-size: 2.4rem; font-weight: 800; }
+.kpi-value-green { color: #3ca266 !important; font-size: 2.4rem; font-weight: 800; }
+.kpi-value-blue { color: #2d7eea !important; font-size: 2.4rem; font-weight: 800; }
+.kpi-value-orange { color: #f28a00 !important; font-size: 2.4rem; font-weight: 800; }
 .badge {
     display: inline-block;
     padding: 8px 14px;
@@ -143,35 +92,26 @@ h2, h3 {
     font-weight: 700;
     margin-top: 12px;
 }
-
-/* INPUTS */
 div[data-baseweb="select"] > div {
     background: #ffffff !important;
     border: 1px solid #ffb9c7 !important;
     border-radius: 16px !important;
     min-height: 58px;
 }
-
 div[data-baseweb="select"] * {
     color: #16171f !important;
 }
-
 input, textarea {
     color: #16171f !important;
 }
-
 .stTextInput input, .stNumberInput input {
     background: #ffffff !important;
     color: #16171f !important;
     border-radius: 14px !important;
 }
-
-/* SEGMENTED */
 button[kind="secondary"], button[data-baseweb="button"] {
     color: #16171f !important;
 }
-
-/* BOUTONS */
 .stButton button, .stFormSubmitButton button {
     border-radius: 16px;
     padding: 0.75rem 1.2rem;
@@ -181,23 +121,6 @@ button[kind="secondary"], button[data-baseweb="button"] {
     border: none;
     box-shadow: 0 12px 24px rgba(244, 63, 108, 0.22);
 }
-
-.stButton button:hover, .stFormSubmitButton button:hover {
-    background: #f02f59;
-    color: white !important;
-}
-
-/* TABLES */
-[data-testid="stDataFrame"] {
-    border-radius: 18px;
-    overflow: hidden;
-}
-
-/* PROGRESS */
-.stProgress > div > div > div > div {
-    background-color: #ff4266;
-}
-
 .category-row {
     display: grid;
     grid-template-columns: 46px 1.2fr 1fr 0.6fr;
@@ -205,7 +128,6 @@ button[kind="secondary"], button[data-baseweb="button"] {
     align-items: center;
     padding: 12px 0;
 }
-
 .cat-icon {
     width: 42px;
     height: 42px;
@@ -215,15 +137,12 @@ button[kind="secondary"], button[data-baseweb="button"] {
     justify-content: center;
     font-size: 22px;
 }
-
 .cat-name {
     font-weight: 800;
 }
-
 .muted {
     color: #746a64 !important;
 }
-
 .expense-card {
     background: #fff5f6;
     border: 1px solid #ffd6de;
@@ -231,7 +150,6 @@ button[kind="secondary"], button[data-baseweb="button"] {
     padding: 16px;
     margin-bottom: 10px;
 }
-
 .footer {
     margin-top: 2rem;
     padding-top: 1.5rem;
@@ -244,38 +162,10 @@ button[kind="secondary"], button[data-baseweb="button"] {
 </style>
 """, unsafe_allow_html=True)
 
-# ======================
-# SUPABASE
-# ======================
 url = st.secrets["SUPABASE_URL"]
 key = st.secrets["SUPABASE_KEY"]
 supabase = create_client(url, key)
 
-def get_transactions():
-    res = supabase.table("transactions").select("*").order("date", desc=True).execute()
-    data = res.data if res.data else []
-    df = pd.DataFrame(data)
-    if not df.empty:
-        df["montant"] = pd.to_numeric(df["montant"], errors="coerce").fillna(0.0)
-    return df
-
-def add_transaction_db(depense_date, libelle, montant, categorie, personne):
-    month_value = f"{depense_date.year}-{depense_date.month:02d}"
-    supabase.table("transactions").insert({
-        "date": str(depense_date),
-        "month": month_value,
-        "libelle": libelle,
-        "montant": -abs(float(montant)),
-        "categorie": categorie,
-        "personne": personne
-    }).execute()
-
-def delete_transaction_db(transaction_id):
-    supabase.table("transactions").delete().eq("id", transaction_id).execute()
-
-# ======================
-# PARAMS
-# ======================
 DEFAULT_CATEGORIES = ["Courses", "Restaurants", "Essence", "Loisirs", "Maison", "Santé", "Bébé", "Autres"]
 DEFAULT_PEOPLE = ["Toi", "Elle", "Commun"]
 
@@ -301,12 +191,6 @@ CATEGORY_COLORS = {
     "Autres": "#eeeeee"
 }
 
-if "budgets" not in st.session_state:
-    st.session_state.budgets = {}
-
-if "categories" not in st.session_state:
-    st.session_state.categories = DEFAULT_CATEGORIES.copy()
-
 def current_month():
     today = date.today()
     return f"{today.year}-{today.month:02d}"
@@ -317,26 +201,93 @@ def month_label(month):
         "05": "Mai", "06": "Juin", "07": "Juillet", "08": "Août",
         "09": "Septembre", "10": "Octobre", "11": "Novembre", "12": "Décembre"
     }
+    if "-" not in month:
+        return month
     year, m = month.split("-")
     return f"{months.get(m, m)} {year}"
 
 def format_euro(value):
     return f"{float(value):,.2f} €".replace(",", " ").replace(".", ",")
 
-def get_budget(month, cat):
-    return float(st.session_state.budgets.get(month, {}).get(cat, 0.0))
+def get_transactions():
+    res = supabase.table("transactions").select("*").order("date", desc=True).execute()
+    data = res.data if res.data else []
+    df = pd.DataFrame(data)
+    if not df.empty:
+        df["montant"] = pd.to_numeric(df["montant"], errors="coerce").fillna(0.0)
+    return df
 
-# ======================
-# HEADER
-# ======================
+def add_transaction_db(depense_date, libelle, montant, categorie, personne):
+    month_value = f"{depense_date.year}-{depense_date.month:02d}"
+    supabase.table("transactions").insert({
+        "date": str(depense_date),
+        "month": month_value,
+        "libelle": libelle,
+        "montant": -abs(float(montant)),
+        "categorie": categorie,
+        "personne": personne
+    }).execute()
+
+def delete_transaction_db(transaction_id):
+    supabase.table("transactions").delete().eq("id", transaction_id).execute()
+
+def get_categories():
+    res = supabase.table("categories").select("*").order("name").execute()
+    data = res.data if res.data else []
+
+    if not data:
+        for cat in DEFAULT_CATEGORIES:
+            supabase.table("categories").insert({"name": cat}).execute()
+        res = supabase.table("categories").select("*").order("name").execute()
+        data = res.data if res.data else []
+
+    cats = [x["name"] for x in data]
+    return cats if cats else DEFAULT_CATEGORIES
+
+def add_category_db(name):
+    supabase.table("categories").insert({"name": name}).execute()
+
+def delete_category_db(name):
+    supabase.table("categories").delete().eq("name", name).execute()
+
+def get_budgets():
+    res = supabase.table("budgets").select("*").execute()
+    data = res.data if res.data else []
+    result = {}
+    for row in data:
+        result.setdefault(row["month"], {})[row["category"]] = float(row["amount"])
+    return result
+
+def save_budget_db(month, category, amount):
+    existing = (
+        supabase.table("budgets")
+        .select("id")
+        .eq("month", month)
+        .eq("category", category)
+        .execute()
+    )
+
+    if existing.data:
+        budget_id = existing.data[0]["id"]
+        supabase.table("budgets").update({"amount": float(amount)}).eq("id", budget_id).execute()
+    else:
+        supabase.table("budgets").insert({
+            "month": month,
+            "category": category,
+            "amount": float(amount)
+        }).execute()
+
+def get_budget(budgets, month, cat):
+    return float(budgets.get(month, {}).get(cat, 0.0))
+
+categories = get_categories()
+budgets = get_budgets()
+
 st.markdown("# Budget Couple 💕")
 st.markdown("<div class='hero-subtitle'>Gérez vos dépenses, budgets et projets à deux.</div>", unsafe_allow_html=True)
 
 tabs = st.tabs(["🏠 Dashboard", "➕ Ajouter", "☷ Historique", "◔ Budgets", "🏷️ Catégories"])
 
-# ======================
-# DASHBOARD
-# ======================
 with tabs[0]:
     transactions = get_transactions()
 
@@ -360,7 +311,7 @@ with tabs[0]:
             df = df[df["personne"] == person_filter]
 
     total_depenses = abs(df["montant"].sum()) if not df.empty else 0.0
-    budget_total = sum(get_budget(selected_month, cat) for cat in st.session_state.categories)
+    budget_total = sum(get_budget(budgets, selected_month, cat) for cat in categories)
     reste_total = budget_total - total_depenses
     nb_depenses = len(df)
 
@@ -372,7 +323,7 @@ with tabs[0]:
             <div class="kpi-icon" style="background:#ffd5df;">🛒</div>
             <div class="kpi-label">Dépensé</div>
             <div class="kpi-value-pink">{format_euro(total_depenses)}</div>
-            <div class="badge">↑ vs budget</div>
+            <div class="badge">Suivi mensuel</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -382,7 +333,7 @@ with tabs[0]:
             <div class="kpi-icon" style="background:#d8f3dc;">👛</div>
             <div class="kpi-label">Reste à dépenser</div>
             <div class="kpi-value-green">{format_euro(reste_total)}</div>
-            <div class="badge">Suivi mensuel</div>
+            <div class="badge">Budget restant</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -392,7 +343,7 @@ with tabs[0]:
             <div class="kpi-icon" style="background:#d7ebff;">◔</div>
             <div class="kpi-label">Budget total</div>
             <div class="kpi-value-blue">{format_euro(budget_total)}</div>
-            <div class="muted">{sum(1 for c in st.session_state.categories if get_budget(selected_month, c) > 0)} catégorie budgétée</div>
+            <div class="muted">{sum(1 for c in categories if get_budget(budgets, selected_month, c) > 0)} catégorie(s) budgétée(s)</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -412,10 +363,10 @@ with tabs[0]:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
         st.markdown("### ◔ Budget par catégorie")
 
-        for cat in st.session_state.categories:
+        for cat in categories:
             cat_df = df[df["categorie"] == cat] if not df.empty else pd.DataFrame()
             spent = abs(cat_df["montant"].sum()) if not cat_df.empty else 0.0
-            budget = get_budget(selected_month, cat)
+            budget = get_budget(budgets, selected_month, cat)
             remaining = budget - spent
             percent = int(min(spent / budget, 1) * 100) if budget > 0 else (100 if spent > 0 else 0)
             icon = CATEGORY_ICONS.get(cat, "•")
@@ -436,11 +387,6 @@ with tabs[0]:
             """, unsafe_allow_html=True)
             st.progress(percent / 100)
 
-        st.markdown("""
-        <div style="background:#fff5ef;border:1px solid #ffe0cf;border-radius:18px;padding:16px;margin-top:18px;">
-            💡 <b>Astuce :</b> définissez vos budgets dans l’onglet <b>Budgets</b> pour mieux suivre vos dépenses.
-        </div>
-        """, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
     with right:
@@ -483,9 +429,6 @@ with tabs[0]:
     </div>
     """, unsafe_allow_html=True)
 
-# ======================
-# AJOUTER
-# ======================
 with tabs[1]:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.subheader("Ajouter une dépense")
@@ -494,7 +437,7 @@ with tabs[1]:
         depense_date = st.date_input("Date", value=date.today())
         libelle = st.text_input("Libellé", placeholder="Ex : Carrefour, restaurant, pharmacie...")
         montant = st.number_input("Montant", min_value=0.0, step=1.0)
-        categorie = st.selectbox("Catégorie", options=st.session_state.categories)
+        categorie = st.selectbox("Catégorie", options=categories)
         personne = st.selectbox("Qui paie ?", options=DEFAULT_PEOPLE)
 
         submitted = st.form_submit_button("Ajouter la dépense")
@@ -511,9 +454,6 @@ with tabs[1]:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-# ======================
-# HISTORIQUE
-# ======================
 with tabs[2]:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.subheader("Historique")
@@ -526,7 +466,7 @@ with tabs[2]:
         months = sorted(df["month"].dropna().unique().tolist(), reverse=True)
         hist_month = st.selectbox("Mois", ["Tous"] + months, format_func=lambda x: x if x == "Tous" else month_label(x))
         hist_person = st.selectbox("Personne", ["Tous"] + DEFAULT_PEOPLE)
-        hist_category = st.selectbox("Catégorie", ["Toutes"] + st.session_state.categories)
+        hist_category = st.selectbox("Catégorie", ["Toutes"] + categories)
 
         filtered = df.copy()
         if hist_month != "Tous":
@@ -562,52 +502,62 @@ with tabs[2]:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-# ======================
-# BUDGETS
-# ======================
 with tabs[3]:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.subheader("Budgets")
 
     budget_month = st.text_input("Mois", value=current_month())
 
-    if budget_month not in st.session_state.budgets:
-        st.session_state.budgets[budget_month] = {}
+    with st.form("budget_form"):
+        new_values = {}
 
-    for cat in st.session_state.categories:
-        value = st.number_input(
-            f"{CATEGORY_ICONS.get(cat, '•')} {cat}",
-            min_value=0.0,
-            step=10.0,
-            value=float(st.session_state.budgets[budget_month].get(cat, 0.0)),
-            key=f"budget_{budget_month}_{cat}"
-        )
-        st.session_state.budgets[budget_month][cat] = value
+        for cat in categories:
+            new_values[cat] = st.number_input(
+                f"{CATEGORY_ICONS.get(cat, '•')} {cat}",
+                min_value=0.0,
+                step=10.0,
+                value=get_budget(budgets, budget_month, cat),
+                key=f"budget_{budget_month}_{cat}"
+            )
 
-    st.success("Budgets enregistrés pour cette session.")
-    st.caption("Prochaine étape : stocker les budgets dans Supabase.")
+        save_btn = st.form_submit_button("Enregistrer les budgets")
+
+        if save_btn:
+            for cat, amount in new_values.items():
+                save_budget_db(budget_month, cat, amount)
+            st.success("Budgets sauvegardés dans Supabase")
+            st.rerun()
+
     st.markdown("</div>", unsafe_allow_html=True)
 
-# ======================
-# CATEGORIES
-# ======================
 with tabs[4]:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.subheader("Catégories")
 
-    for cat in st.session_state.categories:
+    for cat in categories:
         st.write(f"{CATEGORY_ICONS.get(cat, '•')} {cat}")
 
     new_cat = st.text_input("Nouvelle catégorie")
 
     if st.button("Ajouter catégorie"):
         clean = new_cat.strip()
-        if clean and clean not in st.session_state.categories:
-            st.session_state.categories.append(clean)
+        if clean and clean not in categories:
+            add_category_db(clean)
             st.success("Catégorie ajoutée")
             st.rerun()
-        elif clean in st.session_state.categories:
+        elif clean in categories:
             st.warning("Cette catégorie existe déjà.")
 
-    st.caption("Prochaine étape : stocker les catégories dans Supabase.")
+    st.markdown("### Supprimer une catégorie")
+    removable = [c for c in categories if c != "Autres"]
+
+    to_delete = st.selectbox("Catégorie à supprimer", ["Aucune"] + removable)
+
+    if to_delete != "Aucune":
+        st.warning("Attention : les anciennes dépenses gardent cette catégorie.")
+        if st.button("Supprimer cette catégorie"):
+            delete_category_db(to_delete)
+            st.success("Catégorie supprimée")
+            st.rerun()
+
     st.markdown("</div>", unsafe_allow_html=True)
