@@ -177,24 +177,18 @@ button[kind="secondary"], button[data-baseweb="button"] {
 </style>
 """, unsafe_allow_html=True)
 
-def _clean_secret(val: str) -> str:
-    s = str(val).strip()
-    # Remove any quote characters (straight, curly, smart) at start/end
-    while s and s[0] in (‘”’, “’”, ““”, “””, “‘”, “’”):
-        s = s[1:]
-    while s and s[-1] in (‘”’, “’”, ““”, “””, “‘”, “’”):
-        s = s[:-1]
-    return s.strip()
-
-url = _clean_secret(st.secrets.get(“SUPABASE_URL”, “”))
-key = _clean_secret(st.secrets.get(“SUPABASE_KEY”, “”))
+url = st.secrets.get("SUPABASE_URL", "").strip()
+key = st.secrets.get("SUPABASE_KEY", "").strip()
 
 if not url or not key:
-    st.error(“🔑 Secrets Supabase manquants. Va dans Streamlit → Settings → Secrets.”)
+    st.error("🔑 Secrets Supabase manquants. Va dans Settings → Secrets de ton app Streamlit et vérifie SUPABASE_URL et SUPABASE_KEY.")
     st.stop()
 
-# Diagnostic temporaire — à supprimer après résolution
-st.info(f”🔍 Debug URL : longueur={len(url)}, début={repr(url[:8])}, fin={repr(url[-5:])}”)
+bad_chars = chr(34) + chr(39) + chr(0x201C) + chr(0x201D) + chr(0x2018) + chr(0x2019)
+url = url.strip(bad_chars)
+key = key.strip(bad_chars)
+
+st.info("Debug — URL len=" + str(len(url)) + "  debut=" + repr(url[:8]) + "  fin=" + repr(url[-5:]))
 st.stop()
 
 supabase = create_client(url, key)
