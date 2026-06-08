@@ -177,8 +177,13 @@ button[kind="secondary"], button[data-baseweb="button"] {
 </style>
 """, unsafe_allow_html=True)
 
-url = st.secrets["SUPABASE_URL"]
-key = st.secrets["SUPABASE_KEY"]
+url = st.secrets.get("SUPABASE_URL", "").strip()
+key = st.secrets.get("SUPABASE_KEY", "").strip()
+
+if not url or not key:
+    st.error("🔑 Secrets Supabase manquants. Va dans Settings → Secrets de ton app Streamlit et vérifie SUPABASE_URL et SUPABASE_KEY.")
+    st.stop()
+
 supabase = create_client(url, key)
 
 DEFAULT_CATEGORIES = ["Courses", "Restaurants", "Essence", "Loisirs", "Maison", "Santé", "Bébé", "Autres"]

@@ -1,6 +1,6 @@
 streamlit
 pandas
-supabase
+supabase==2.9.1
 plotly
 openpyxl
 xlrd
