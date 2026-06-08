@@ -333,29 +333,35 @@ def auto_categorize(description):
     return "Autres"
 
 
+def _norm(s):
+    """Lowercase + strip accents for robust column matching."""
+    import unicodedata
+    s = unicodedata.normalize('NFD', str(s).lower().strip())
+    return ''.join(c for c in s if unicodedata.category(c) != 'Mn')
+
+
 def detect_columns(df):
     """Detect date, description, debit, credit and single-amount columns."""
-    col_map = {c.lower().strip(): c for c in df.columns}
+    col_map = {_norm(c): c for c in df.columns}
 
     date_keys = [
-        'date', 'date de comptabilisation', "date d'opération", "date d'operation",
+        'date', 'date de comptabilisation', "date d'operation",
         'dateop', 'date started', 'started date', 'completed date', 'jour',
-        'date opération', 'date operation', 'date valeur',
+        'date operation', 'date valeur',
     ]
     desc_keys = [
-        'libellé', 'libelle', 'libellé simplifié', 'libelle simplifie',
-        'label', 'description', 'opération', 'operation', 'payee',
-        'bénéficiaire', 'beneficiaire', 'suppl label', 'detail',
-        'libellé complet', 'libelle complet',
+        'libelle', 'libelle simplifie', 'libelle complet',
+        'label', 'description', 'operation', 'payee',
+        'beneficiaire', 'suppl label', 'detail',
     ]
     debit_keys = [
-        'débit', 'debit', 'montant débit', 'montant debit', 'sortie', 'retrait',
+        'debit', 'montant debit', 'sortie', 'retrait',
     ]
     credit_keys = [
-        'crédit', 'credit', 'montant crédit', 'montant credit', 'entrée', 'entree',
+        'credit', 'montant credit', 'entree', 'versement',
     ]
     amount_keys = [
-        'montant', 'amount', 'amount (eur)', 'solde', 'montant (eur)',
+        'montant', 'amount', 'amount (eur)', 'montant (eur)',
     ]
 
     date_col = next((col_map[k] for k in date_keys if k in col_map), None)
