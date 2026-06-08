@@ -184,12 +184,9 @@ if not url or not key:
     st.error("🔑 Secrets Supabase manquants. Va dans Settings → Secrets de ton app Streamlit et vérifie SUPABASE_URL et SUPABASE_KEY.")
     st.stop()
 
-bad_chars = chr(34) + chr(39) + chr(0x201C) + chr(0x201D) + chr(0x2018) + chr(0x2019)
+bad_chars = chr(34) + chr(39) + chr(60) + chr(62) + chr(0x201C) + chr(0x201D) + chr(0x2018) + chr(0x2019)
 url = url.strip(bad_chars)
 key = key.strip(bad_chars)
-
-st.info("Debug — URL len=" + str(len(url)) + "  debut=" + repr(url[:8]) + "  fin=" + repr(url[-5:]))
-st.stop()
 
 supabase = create_client(url, key)
 
