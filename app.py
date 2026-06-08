@@ -839,75 +839,155 @@ with tabs[2]:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.subheader("📂 Import depuis extrait bancaire")
     st.markdown(
-        "<p class='muted'>Formats supportés : CSV et Excel (.xlsx, .xls).<br>"
-        "Compatible avec Crédit Agricole, BNP Paribas, Société Générale, "
-        "Boursorama, Revolut, N26 et la plupart des banques françaises.</p>",
+        "<p class='muted'>CSV ou Excel (.xlsx, .xls) — toutes banques françaises.</p>",
         unsafe_allow_html=True,
     )
 
     uploaded = st.file_uploader("Choisir un fichier", type=["csv", "xlsx", "xls"])
 
     if uploaded is not None:
-        with st.spinner("Analyse du fichier en cours…"):
-            result, error = parse_bank_file(uploaded)
+        filename = uploaded.name.lower()
+        raw = uploaded.read()
 
-        if result is None:
-            st.error(f"Impossible de traiter le fichier : {error}")
-        elif len(result) == 0:
-            st.warning("Aucune dépense (débit) détectée dans ce fichier.")
-            if error:
-                st.info(error)
+        # Read raw file without assuming header position
+        raw_df = None
+        if filename.endswith(".xlsx") or filename.endswith(".xls"):
+            for engine in ["openpyxl", None]:
+                try:
+                    kw = {"engine": engine} if engine else {}
+                    raw_df = pd.read_excel(io.BytesIO(raw), header=None, dtype=str, **kw)
+                    break
+                except Exception:
+                    pass
         else:
-            if error:
-                st.warning(error)
-            st.success(f"✅ {len(result)} dépense(s) détectée(s) — vérifiez avant d'importer.")
+            for enc in ["utf-8-sig", "utf-8", "latin-1", "cp1252"]:
+                for sep in [";", ",", "\t", "|"]:
+                    try:
+                        t = pd.read_csv(io.BytesIO(raw), sep=sep, encoding=enc,
+                                        header=None, dtype=str, on_bad_lines="skip")
+                        if len(t.columns) >= 2:
+                            raw_df = t
+                            break
+                    except Exception:
+                        pass
+                if raw_df is not None:
+                    break
 
-            preview_df = pd.DataFrame([{
-                "✓": True,
-                "Date": r["date"],
-                "Libellé": r["libelle"],
-                "Montant": r["montant"],
-                "Catégorie": r["categorie"],
-                "Qui": r["personne"],
-            } for r in result])
+        if raw_df is None or raw_df.empty:
+            st.error("Impossible de lire le fichier.")
+        else:
+            raw_df = raw_df.fillna("")
 
-            st.markdown("#### Aperçu et corrections")
-            st.markdown(
-                "<p class='muted'>Décochez les lignes à exclure. "
-                "Modifiez les catégories ou la personne si nécessaire.</p>",
-                unsafe_allow_html=True,
+            # Auto-detect header row
+            auto_header = None
+            date_syn = {"date", "jour"}
+            desc_syn = {"libelle", "label", "description", "operation"}
+            for i, row in raw_df.iterrows():
+                vals = {_norm(str(v)) for v in row if str(v).strip() not in ("", "nan")}
+                if (vals & date_syn) and (vals & desc_syn):
+                    auto_header = int(i)
+                    break
+
+            # Let user confirm or override header row
+            header_row = st.number_input(
+                "Ligne d'en-tête (0 = première ligne)",
+                min_value=0,
+                max_value=max(0, len(raw_df) - 1),
+                value=auto_header if auto_header is not None else 0,
+                step=1,
+                help="Numéro de la ligne qui contient Date, Libellé, Débit…",
             )
 
-            edited = st.data_editor(
-                preview_df,
-                use_container_width=True,
-                num_rows="fixed",
-                column_config={
-                    "✓": st.column_config.CheckboxColumn("Importer", default=True),
-                    "Date": st.column_config.DateColumn("Date"),
-                    "Montant": st.column_config.NumberColumn("Montant (€)", format="%.2f"),
-                    "Catégorie": st.column_config.SelectboxColumn("Catégorie", options=categories),
-                    "Qui": st.column_config.SelectboxColumn("Qui", options=DEFAULT_PEOPLE),
-                },
-            )
+            # Build DataFrame from chosen header row
+            data_df = raw_df.iloc[int(header_row):].copy()
+            data_df.columns = [str(c).strip() for c in raw_df.iloc[int(header_row)]]
+            data_df = data_df.iloc[1:].reset_index(drop=True)
+            data_df = data_df.replace("", float("nan")).dropna(how="all")
 
-            to_import = edited[edited["✓"] == True]
-            st.markdown(f"**{len(to_import)} transaction(s) sélectionnée(s)**")
+            with st.expander("Aperçu du fichier (colonnes détectées)"):
+                st.dataframe(data_df.head(5), use_container_width=True)
 
-            if st.button("⬆️ Importer les transactions sélectionnées", disabled=len(to_import) == 0):
-                batch = [
-                    {
-                        "date": row["Date"],
-                        "libelle": str(row["Libellé"]),
-                        "montant": float(row["Montant"]),
-                        "categorie": row["Catégorie"],
-                        "personne": row["Qui"],
-                    }
-                    for _, row in to_import.iterrows()
-                ]
-                add_transactions_batch(batch)
-                st.success(f"✅ {len(batch)} transaction(s) importée(s) avec succès !")
-                st.rerun()
+            date_col, desc_col, debit_col, credit_col, amount_col = detect_columns(data_df)
+
+            all_cols = data_df.columns.tolist()
+            col_none = ["(aucune)"] + all_cols
+
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                sel_date = st.selectbox("Colonne Date", col_none,
+                    index=col_none.index(date_col) if date_col in col_none else 0)
+            with c2:
+                sel_desc = st.selectbox("Colonne Libellé", col_none,
+                    index=col_none.index(desc_col) if desc_col in col_none else 0)
+            with c3:
+                debit_guess = debit_col or amount_col or "(aucune)"
+                sel_amount = st.selectbox("Colonne Débit/Montant", col_none,
+                    index=col_none.index(debit_guess) if debit_guess in col_none else 0)
+
+            sel_person = st.selectbox("Assigner à", DEFAULT_PEOPLE, index=2)
+
+            if sel_date != "(aucune)" and sel_desc != "(aucune)" and sel_amount != "(aucune)":
+                transactions = []
+                for _, row in data_df.iterrows():
+                    parsed_date = parse_date_value(row.get(sel_date))
+                    if parsed_date is None:
+                        continue
+                    libelle = str(row.get(sel_desc, "")).strip()
+                    if not libelle or libelle == "nan":
+                        continue
+                    raw_amt = normalize_amount(row.get(sel_amount))
+                    if raw_amt is None or raw_amt == 0:
+                        continue
+                    if raw_amt > 0:
+                        continue  # skip credits
+                    transactions.append({
+                        "date": parsed_date,
+                        "libelle": libelle,
+                        "montant": abs(raw_amt),
+                        "categorie": auto_categorize(libelle),
+                        "personne": sel_person,
+                    })
+
+                if not transactions:
+                    st.warning("Aucune dépense détectée avec ces colonnes.")
+                else:
+                    st.success(f"✅ {len(transactions)} dépense(s) détectée(s)")
+                    preview_df = pd.DataFrame([{
+                        "✓": True,
+                        "Date": t["date"],
+                        "Libellé": t["libelle"],
+                        "Montant": t["montant"],
+                        "Catégorie": t["categorie"],
+                        "Qui": t["personne"],
+                    } for t in transactions])
+
+                    edited = st.data_editor(
+                        preview_df,
+                        use_container_width=True,
+                        num_rows="fixed",
+                        column_config={
+                            "✓": st.column_config.CheckboxColumn("Importer", default=True),
+                            "Date": st.column_config.DateColumn("Date"),
+                            "Montant": st.column_config.NumberColumn("Montant (€)", format="%.2f"),
+                            "Catégorie": st.column_config.SelectboxColumn("Catégorie", options=categories),
+                            "Qui": st.column_config.SelectboxColumn("Qui", options=DEFAULT_PEOPLE),
+                        },
+                    )
+
+                    to_import = edited[edited["✓"] == True]
+                    st.markdown(f"**{len(to_import)} transaction(s) sélectionnée(s)**")
+
+                    if st.button("⬆️ Importer", disabled=len(to_import) == 0):
+                        batch = [{
+                            "date": row["Date"],
+                            "libelle": str(row["Libellé"]),
+                            "montant": float(row["Montant"]),
+                            "categorie": row["Catégorie"],
+                            "personne": row["Qui"],
+                        } for _, row in to_import.iterrows()]
+                        add_transactions_batch(batch)
+                        st.success(f"✅ {len(batch)} transaction(s) importée(s) !")
+                        st.rerun()
 
     st.markdown("</div>", unsafe_allow_html=True)
 
