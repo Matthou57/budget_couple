@@ -873,6 +873,25 @@ with tabs[2]:
                 if raw_df is not None:
                     break
 
+        # Sheet selector for Excel files
+        if filename.endswith(".xlsx") or filename.endswith(".xls"):
+            try:
+                xl = pd.ExcelFile(io.BytesIO(raw), engine="openpyxl")
+                sheet_names = xl.sheet_names
+            except Exception:
+                sheet_names = ["Feuille 1"]
+            if len(sheet_names) > 1:
+                chosen_sheet = st.selectbox("Feuille Excel", sheet_names, index=0)
+            else:
+                chosen_sheet = sheet_names[0]
+            try:
+                raw_df = pd.read_excel(
+                    io.BytesIO(raw), sheet_name=chosen_sheet,
+                    header=None, dtype=str, engine="openpyxl"
+                )
+            except Exception:
+                raw_df = None
+
         if raw_df is None or raw_df.empty:
             st.error("Impossible de lire le fichier.")
         else:
