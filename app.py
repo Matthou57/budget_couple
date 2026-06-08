@@ -904,7 +904,19 @@ with tabs[2]:
             data_df = data_df.iloc[1:].reset_index(drop=True)
             data_df = data_df.replace("", float("nan")).dropna(how="all")
 
-            with st.expander("Aperçu du fichier (colonnes détectées)"):
+            # Deduplicate column names (merged cells produce duplicates)
+            seen = {}
+            deduped = []
+            for col in data_df.columns:
+                if col in seen:
+                    seen[col] += 1
+                    deduped.append(f"{col}.{seen[col]}")
+                else:
+                    seen[col] = 0
+                    deduped.append(col)
+            data_df.columns = deduped
+
+            with st.expander("Apercu du fichier (colonnes detectees)"):
                 st.dataframe(data_df.head(5), use_container_width=True)
 
             date_col, desc_col, debit_col, credit_col, amount_col = detect_columns(data_df)
