@@ -177,8 +177,12 @@ button[kind="secondary"], button[data-baseweb="button"] {
 </style>
 """, unsafe_allow_html=True)
 
-url = st.secrets.get("SUPABASE_URL", "").strip()
-key = st.secrets.get("SUPABASE_KEY", "").strip()
+def _clean_secret(val: str) -> str:
+    # Strip whitespace and any smart/curly quotes that iPhone autocorrect may insert
+    return val.strip().strip('“”‘’"\'')
+
+url = _clean_secret(st.secrets.get("SUPABASE_URL", ""))
+key = _clean_secret(st.secrets.get("SUPABASE_KEY", ""))
 
 if not url or not key:
     st.error("🔑 Secrets Supabase manquants. Va dans Settings → Secrets de ton app Streamlit et vérifie SUPABASE_URL et SUPABASE_KEY.")
