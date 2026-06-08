@@ -178,15 +178,24 @@ button[kind="secondary"], button[data-baseweb="button"] {
 """, unsafe_allow_html=True)
 
 def _clean_secret(val: str) -> str:
-    # Strip whitespace and any smart/curly quotes that iPhone autocorrect may insert
-    return val.strip().strip('“”‘’"\'')
+    s = str(val).strip()
+    # Remove any quote characters (straight, curly, smart) at start/end
+    while s and s[0] in (‘”’, “’”, ““”, “””, “‘”, “’”):
+        s = s[1:]
+    while s and s[-1] in (‘”’, “’”, ““”, “””, “‘”, “’”):
+        s = s[:-1]
+    return s.strip()
 
-url = _clean_secret(st.secrets.get("SUPABASE_URL", ""))
-key = _clean_secret(st.secrets.get("SUPABASE_KEY", ""))
+url = _clean_secret(st.secrets.get(“SUPABASE_URL”, “”))
+key = _clean_secret(st.secrets.get(“SUPABASE_KEY”, “”))
 
 if not url or not key:
-    st.error("🔑 Secrets Supabase manquants. Va dans Settings → Secrets de ton app Streamlit et vérifie SUPABASE_URL et SUPABASE_KEY.")
+    st.error(“🔑 Secrets Supabase manquants. Va dans Streamlit → Settings → Secrets.”)
     st.stop()
+
+# Diagnostic temporaire — à supprimer après résolution
+st.info(f”🔍 Debug URL : longueur={len(url)}, début={repr(url[:8])}, fin={repr(url[-5:])}”)
+st.stop()
 
 supabase = create_client(url, key)
 
