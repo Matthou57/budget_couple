@@ -383,18 +383,40 @@ def detect_columns(df):
     return date_col, desc_col, debit_col, credit_col, amount_col
 
 
-def _try_read_excel(raw, skiprows=0):
-    """Try reading an Excel file with a given number of skipped header rows."""
+def _find_header_row_excel(raw):
+    """Scan all rows to find the one that looks like a header (has Date + Libelle)."""
+    date_synonyms = {'date', 'jour'}
+    desc_synonyms = {'libelle', 'label', 'description', 'operation', 'libelle simplifie'}
     try:
-        return pd.read_excel(io.BytesIO(raw), engine='openpyxl', skiprows=skiprows, dtype=str)
+        preview = pd.read_excel(
+            io.BytesIO(raw), engine='openpyxl', header=None,
+            dtype=str, nrows=20,
+        )
+        for i, row in preview.iterrows():
+            vals = {_norm(str(v)) for v in row if pd.notna(v) and str(v).strip() not in ('', 'nan')}
+            has_date = bool(vals & date_synonyms)
+            has_desc = bool(vals & desc_synonyms)
+            if has_date and has_desc:
+                return int(i)
     except Exception:
+        pass
+    return None
+
+
+def _read_excel(raw):
+    """Read Excel file, auto-detecting the header row."""
+    header_row = _find_header_row_excel(raw)
+    skiprows = header_row if header_row is not None else 0
+    for engine in ['openpyxl', None]:
         try:
-            return pd.read_excel(io.BytesIO(raw), skiprows=skiprows, dtype=str)
+            kw = {'engine': engine} if engine else {}
+            return pd.read_excel(io.BytesIO(raw), skiprows=skiprows, dtype=str, **kw)
         except Exception:
-            return None
+            continue
+    return None
 
 
-def _try_read_csv(raw):
+def _read_csv(raw):
     """Try reading a CSV with various encodings and separators."""
     for encoding in ['utf-8-sig', 'utf-8', 'latin-1', 'cp1252']:
         for sep in [';', ',', '\t', '|']:
@@ -410,14 +432,6 @@ def _try_read_csv(raw):
     return None
 
 
-def _has_useful_columns(df):
-    """Return True if this DataFrame looks like it has real bank columns."""
-    if df is None or df.empty or len(df.columns) < 2:
-        return False
-    date_c, desc_c, deb_c, cred_c, amt_c = detect_columns(df)
-    return date_c is not None and desc_c is not None
-
-
 def parse_bank_file(file):
     """
     Parse a bank CSV or Excel file.
@@ -426,40 +440,26 @@ def parse_bank_file(file):
     """
     filename = file.name.lower()
     raw = file.read()
-    df = None
 
     if filename.endswith('.xlsx') or filename.endswith('.xls'):
-        # Try skipping 0..8 header rows to find the real data table
-        for skip in range(9):
-            candidate = _try_read_excel(raw, skiprows=skip)
-            if candidate is not None:
-                candidate.columns = [str(c).strip() for c in candidate.columns]
-                if _has_useful_columns(candidate):
-                    df = candidate
-                    break
-        if df is None:
-            # Fallback: use skip=0 even without recognisable columns
-            df = _try_read_excel(raw, skiprows=0)
+        df = _read_excel(raw)
     else:
-        df = _try_read_csv(raw)
+        df = _read_csv(raw)
 
     if df is None or df.empty:
-        return None, "Impossible de lire le fichier. Vérifiez le format (CSV, XLSX, XLS)."
+        return None, "Impossible de lire le fichier. Verifiez le format (CSV, XLSX, XLS)."
 
     df.columns = [str(c).strip() for c in df.columns]
+    df = df.dropna(how='all')
 
     date_col, desc_col, debit_col, credit_col, amount_col = detect_columns(df)
 
     if not date_col:
-        return None, (
-            "Colonne de date non detectee. Colonnes trouvees : "
-            + ", ".join(df.columns.tolist()[:10])
-        )
+        cols_preview = ", ".join(df.columns.tolist()[:10])
+        return None, "Colonne de date non trouvee. Colonnes : " + cols_preview
     if not desc_col:
-        return None, (
-            "Colonne de libelle non detectee. Colonnes trouvees : "
-            + ", ".join(df.columns.tolist()[:10])
-        )
+        cols_preview = ", ".join(df.columns.tolist()[:10])
+        return None, "Colonne de libelle non trouvee. Colonnes : " + cols_preview
 
     transactions = []
 
