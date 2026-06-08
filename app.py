@@ -557,6 +557,13 @@ def delete_transaction_db(transaction_id):
     supabase.table("transactions").delete().eq("id", transaction_id).execute()
 
 
+def update_transaction_db(transaction_id, categorie, personne):
+    supabase.table("transactions").update({
+        "categorie": categorie,
+        "personne": personne,
+    }).eq("id", transaction_id).execute()
+
+
 def get_categories():
     res = supabase.table("categories").select("*").order("name").execute()
     data = res.data if res.data else []
@@ -1050,15 +1057,38 @@ with tabs[3]:
         if filtered.empty:
             st.warning("Aucune dépense avec ces filtres.")
         else:
-            display_df = filtered.sort_values("date", ascending=False).copy()
-            display_df["montant"] = display_df["montant"].apply(lambda x: format_euro(abs(float(x))))
-            st.dataframe(
-                display_df[["date", "month", "libelle", "categorie", "personne", "montant"]],
+            sorted_df = filtered.sort_values("date", ascending=False).copy()
+
+            edit_df = sorted_df[["id", "date", "libelle", "categorie", "personne", "montant"]].copy()
+            edit_df["montant_affiche"] = edit_df["montant"].apply(lambda x: abs(float(x)))
+
+            edited = st.data_editor(
+                edit_df[["date", "libelle", "categorie", "personne", "montant_affiche"]],
                 use_container_width=True,
                 hide_index=True,
+                column_config={
+                    "date": st.column_config.DateColumn("Date", disabled=True),
+                    "libelle": st.column_config.TextColumn("Libelle", disabled=True),
+                    "montant_affiche": st.column_config.NumberColumn("Montant", format="%.2f", disabled=True),
+                    "categorie": st.column_config.SelectboxColumn("Categorie", options=categories),
+                    "personne": st.column_config.SelectboxColumn("Qui", options=DEFAULT_PEOPLE),
+                },
             )
 
-            st.markdown("### Supprimer une dépense")
+            if st.button("Sauvegarder les modifications"):
+                changes = 0
+                for i, row in edited.iterrows():
+                    orig = edit_df.iloc[i]
+                    if row["categorie"] != orig["categorie"] or row["personne"] != orig["personne"]:
+                        update_transaction_db(sorted_df.iloc[i]["id"], row["categorie"], row["personne"])
+                        changes += 1
+                if changes:
+                    st.success(f"{changes} modification(s) sauvegardee(s)")
+                    st.rerun()
+                else:
+                    st.info("Aucune modification detectee.")
+
+            st.markdown("### Supprimer une depense")
             options = {
                 f"{row['date']} | {row['libelle']} | {row['categorie']} | {format_euro(abs(float(row['montant'])))}": row["id"]
                 for _, row in filtered.iterrows()
@@ -1068,7 +1098,7 @@ with tabs[3]:
             if selected != "Aucune":
                 if st.button("Supprimer"):
                     delete_transaction_db(options[selected])
-                    st.success("Dépense supprimée")
+                    st.success("Depense supprimee")
                     st.rerun()
 
     st.markdown("</div>", unsafe_allow_html=True)
